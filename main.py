@@ -11,8 +11,9 @@ selection.set_colorkey((0, 0, 0))
 clock = pygame.time.Clock()
 FPS = 60
 
-iterations = 100
+iterations = 255
 size = 1000
+h_size = size // 2
 
 
 def complex_matrix(xmin, xmax, ymin, ymax, pixel_density):
@@ -49,6 +50,7 @@ def draw(x1=-2, y1=-2, dd=4):
 
 draw()
 smx, smy = None, None
+current_state = [-2, -2, 4]
 
 clicked = False
 while True:
@@ -69,8 +71,11 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 x, y = mx - H_WIDTH, my - H_HEIGHT
-                x = min(size, max(x, -size)) / (size / 4)
-                y = min(size, max(y, -size)) / (size / 4)
+                rel_start = ((x + h_size) / size, (y + h_size) / size)
+
+                x = current_state[2] * x / size
+                y = current_state[2] * y / size
+
                 start_drag = x, y
                 smx, smy = mx, my
                 clicked = True
@@ -78,10 +83,16 @@ while True:
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 x, y = mx - H_WIDTH, my - H_HEIGHT
-                x = min(size, max(x, -size)) / (size / 4)
-                y = min(size, max(y, -size)) / (size / 4)
-                draw(*start_drag,
-                     max(abs(start_drag[0] - x), abs(start_drag[1] - y)))
+                x = current_state[2] * x / size
+                y = current_state[2] * y / size
+
+                dd = max(abs(start_drag[0] - x), abs(start_drag[1] - y))
+
+                left = current_state[0] + rel_start[0] * current_state[2]
+                top = current_state[1] + rel_start[1] * current_state[2]
+
+                current_state = left, top, dd
+                draw(left, top, dd)
                 clicked = False
 
     if clicked:
